@@ -1,7 +1,7 @@
-Introduction
+##Introduction
 For this project, the steps I will follow are those discribed during week 1.This is a simple approach and I'd like to give it a first try anyway.
 
-QuestionData
+##Data
 As described in the video, the second step is to tune our dataset.First, I loaded the dataset. The given results of loading the training and testing dataset are the following (dim()):
 
     training = [1] 19622   160
@@ -19,7 +19,7 @@ I then removed all NAs and NZVs, as we did in the video.Here is the result we ob
     rm(testRaw)
     rm(NZV)
     
-Result:
+**Results:**
 
     training = [1] 19622   100
     testing = [1]  20 100
@@ -32,7 +32,7 @@ Now, if we remove the NAs datum, here is our result (dim()):
     testing <- testing[, cond]
     rm(cond)
 
-Result:
+**Resulst:**
 
     training = [1] 19622    59
     testing = [1] 20 59
@@ -41,11 +41,11 @@ We observe that our dataset is now half smaller than it was at the beginning.
 I will now consider that the dataset is ready for training our algorithm.
 I chose a partinionning of 60% training and 40% validation, as recommended in the videos (medium-sized sample).
 
-Features
+##Features
 In this project, I didn't use automated features selection proposed by Caret.
 Instead, I simply went directly to partitionning the data.
 
-Cross-validation
+##Cross-validation
 The reason for this is to have a prepared validation dataset for later cross-validation.
 Here is the dataset we obtained (dim()):
 
@@ -54,14 +54,14 @@ Here is the dataset we obtained (dim()):
     training <- training[inTrain, ]
     rm(inTrain)
     
-Result:
+**Results:**
 
     training = [1] 11776    59
     testing = [1] 20 59
     validation = [1] 7846   59
 
 
-Algorithms
+##Algorithms
 I chose the Random Forest algorithm, as it is the one recommended in the lessons as the best for accuracy on small-sized samples of data. I used a 2 fold cross validation at first we the given result:
 
     accuracy = 0.9998725 
@@ -72,7 +72,7 @@ I wasn't very happy with that accuracy, so I decided to try it all again and twe
     modelRF <- train(classe ~ ., data = training, method = "rf", trControl = trainControl(method = "cv", 4), ntree = 250)
     modelRF
 
-Result:
+**Results:**
 
     accuracy = 0.9998725 
     out-of-sample error = 0.0001274535
@@ -86,15 +86,17 @@ I then decided that the results are actually very good and that I will keep the 
     ose <- 1 - as.numeric(confusionMatrix(validation$classe, RF)$overall[1])
     rm(RF)
 
-Results
+**Results**
 Here's the result when I applied the prediction on the testing dataset (after 6 fold cross-validation):
 
     [1] A A A A A A A A A A A A A A A A A A A A
     Levels: A B C D E
 
-Retry
+##Retry
 I wasn't very satisfied with the result, so I decided to take another chance.
-After a little help, I did everything from scratch, removed also the columns containing X, name or timestamp that weren't very useful for accelerometer data measurement, and I chose a 5 fold cross-validation.Here's the new results I obtained on the testing dataset:
+After a little help, I did everything from scratch, removed also the columns containing X, name or timestamp that weren't very useful for accelerometer data measurement, and I chose a 5 fold cross-validation.
+It is likely that my mistake was to skip the features preparation step.
+Here's the new results I obtained on the testing dataset:
 
      [1] B A B A A E D B A A B C B A E E A B B B
     Levels: A B C D E
