@@ -9,11 +9,30 @@ As described in the video, the second step is to tune our dataset.First, I loade
 
 I then removed all NAs and NZVs, as we did in the video.Here is the result we obtain after removing the NZVs (dim()):
 
+    NZV <- nearZeroVar(trainRaw, saveMetrics = TRUE)
+    head(NZV, 20)
+    training01 <- trainRaw[, !NZV$nzv]
+    testing01 <- testRaw[, !NZV$nzv]
+    dim(training01)
+    dim(testing01)
+    rm(trainRaw)
+    rm(testRaw)
+    rm(NZV)
+    
+Result:
+
     training = [1] 19622   100
     testing = [1]  20 100
 
 We can observe that a certain amount of data has already been removed form our dataset.
 Now, if we remove the NAs datum, here is our result (dim()):
+
+    cond <- (colSums(is.na(training)) == 0)
+    training <- training[, cond]
+    testing <- testing[, cond]
+    rm(cond)
+
+Result:
 
     training = [1] 19622    59
     testing = [1] 20 59
@@ -25,8 +44,17 @@ I chose a partinionning of 60% training and 40% validation, as recommended in th
 Features
 In this project, I didn't use automated features selection proposed by Caret.
 Instead, I simply went directly to partitionning the data.
+
+Cross-validation
 The reason for this is to have a prepared validation dataset for later cross-validation.
 Here is the dataset we obtained (dim()):
+
+    inTrain <- createDataPartition(training$classe, p = 0.70, list = FALSE)
+    validation <- training[-inTrain, ]
+    training <- training[inTrain, ]
+    rm(inTrain)
+    
+Result:
 
     training = [1] 11776    59
     testing = [1] 20 59
@@ -41,10 +69,22 @@ I chose the Random Forest algorithm, as it is the one recommended in the lessons
 
 I wasn't very happy with that accuracy, so I decided to try it all again and tweek the parameters with a 4 fold cross-validation.I had the following result:
 
+    modelRF <- train(classe ~ ., data = training, method = "rf", trControl = trainControl(method = "cv", 4), ntree = 250)
+    modelRF
+
+Result:
+
     accuracy = 0.9998725 
     out-of-sample error = 0.0001274535
 
 I then decided that the results are actually very good and that I will keep the Random Forest method.
+
+    modelRF <- train(classe ~ ., data = training, method = "rf", trControl = trainControl(method = "cv", 6), ntree = 250)
+    RF <- predict(modelRF, validation)
+    confusionMatrix(validation$classe, RF)
+    accuracy <- postResample(RF, validation$classe)
+    ose <- 1 - as.numeric(confusionMatrix(validation$classe, RF)$overall[1])
+    rm(RF)
 
 Results
 Here's the result when I applied the prediction on the testing dataset (after 6 fold cross-validation):
